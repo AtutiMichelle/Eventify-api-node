@@ -9,13 +9,20 @@ const JWT_SECRET = 'your_jwt_secret_key';
 const authenticateUser = (req, res, next) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({ message: 'Unauthorized' });
+        return res.status(401).json({ message: 'Unauthorized: No token provided' });
     }
 
     const token = authHeader.split(' ')[1];
     jwt.verify(token, JWT_SECRET, (err, decoded) => {
         if (err) {
+            console.error('❌ Invalid Token:', err.message);
             return res.status(401).json({ message: 'Invalid token' });
+        }
+
+        console.log('✅ Decoded Token:', decoded); // Debugging
+
+        if (!decoded.user_id) {
+            return res.status(401).json({ message: 'Invalid token payload: user_id missing' });
         }
 
         req.user = decoded;
@@ -24,13 +31,15 @@ const authenticateUser = (req, res, next) => {
 };
 
 // Register for an event
-router.post('/register', authenticateUser, (req, res) => {
+router.post('/register-event', authenticateUser, (req, res) => {
     const { event_id, ticket_type, ticket_quantity, payment_method, special_requests } = req.body;
     const user_id = req.user.user_id;
 
     if (!event_id || !ticket_type || !ticket_quantity || !payment_method) {
         return res.status(400).json({ message: 'All fields are required' });
     }
+
+    console.log(`📌 Registering User ID: ${user_id} for Event ID: ${event_id}`);
 
     const verification_code = `EVT-${Math.floor(100000 + Math.random() * 900000)}`; 
 
@@ -41,10 +50,10 @@ router.post('/register', authenticateUser, (req, res) => {
     db.query(sql, [user_id, event_id, ticket_type, ticket_quantity, payment_method, special_requests, verification_code], 
         (err, result) => {
             if (err) {
-                console.error('Event registration error:', err);
+                console.error('❌ Event registration error:', err);
                 return res.status(500).json({ message: 'Server error' });
             }
-            res.status(201).json({ message: 'Event registration successful', verification_code });
+            res.status(201).json({ message: '✅ Event registration successful', verification_code });
         }
     );
 });
@@ -53,6 +62,8 @@ router.post('/register', authenticateUser, (req, res) => {
 router.get('/user-events', authenticateUser, (req, res) => {
     const user_id = req.user.user_id;
 
+    console.log(`📌 Fetching events for User ID: ${user_id}`);
+
     const sql = `SELECT e.name AS event_name, r.ticket_type, r.ticket_quantity, r.payment_method, r.verification_code 
                  FROM event_registrations r 
                  JOIN events e ON r.event_id = e.id 
@@ -60,7 +71,7 @@ router.get('/user-events', authenticateUser, (req, res) => {
 
     db.query(sql, [user_id], (err, results) => {
         if (err) {
-            console.error('Error fetching user events:', err);
+            console.error('❌ Error fetching user events:', err);
             return res.status(500).json({ message: 'Server error' });
         }
         res.json(results);
