@@ -1,10 +1,4 @@
-Here’s a solid `README.md` for your **Eventify API** repository:  
 
----
-
-### 📜 **README.md for Eventify API**  
-
-```md
 # Eventify API 🎉  
 
 Eventify API is a Node.js and Express.js backend for managing events, authentication, and user data using MySQL.  
