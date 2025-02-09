@@ -8,17 +8,17 @@ const JWT_SECRET = 'your_jwt_secret_key';
 
 // User registration
 router.post('/register', async (req, res) => {
-    const { username, email, password } = req.body;
+    const { name, email, password } = req.body;
 
-    if (!username || !email || !password) {
+    if (!name || !email || !password) {
         return res.status(400).json({ message: 'All fields are required' });
     }
 
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
-        const sql = 'INSERT INTO users (username, email, password) VALUES (?, ?, ?)';
+        const sql = 'INSERT INTO users (name, email, password) VALUES (?, ?, ?)';
         
-        db.query(sql, [username, email, hashedPassword], (err, result) => {
+        db.query(sql, [name, email, hashedPassword], (err, result) => {
             if (err) {
                 console.error('Error registering user:', err);
                 return res.status(500).json({ message: 'Server error' });
