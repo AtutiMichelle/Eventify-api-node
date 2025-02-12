@@ -9,6 +9,7 @@ const authRoutes = require('./routes/auth');
 const eventRoutes=require('./routes/event');
 const eventDetailsRoutes=require('./routes/eventDetails');
 const ticketsRoutes = require('./routes/tickets');
+const dashboardStatsRoutes=require('./routes/dashboard');
 
 app.use(cors());
 app.use(express.json());
@@ -21,6 +22,10 @@ app.use('/api', eventRoutes);
 app.use('/api', eventDetailsRoutes);
 
 app.use('/api/tickets', ticketsRoutes);
+
+app.use('/api/admin',dashboardStatsRoutes);
+
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
