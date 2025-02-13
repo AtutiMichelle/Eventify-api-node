@@ -42,4 +42,13 @@ router.get('/recent-users', async (req, res) => {
     }
 });
 
+router.get('/all-users',async (req,res)=>{
+    try{
+
+    }
+    catch{
+        
+    }
+})
+
 module.exports = router;

@@ -6,6 +6,8 @@ const router = express.Router();
 
 const JWT_SECRET = 'your_jwt_secret_key'; 
 
+
+
 // User registration
 router.post('/register', async (req, res) => {
     const { name, email, password } = req.body;
@@ -58,28 +60,30 @@ router.post('/login', (req, res) => {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
 
-        const token = jwt.sign({ user_id: user.id }, JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ user_id: user.id, usertype: user.usertype }, JWT_SECRET, { expiresIn: '1h' });
 
-        res.json({ message: 'Login successful', token });
+        res.json({ message: 'Login successful', token, usertype: user.usertype });
     });
 });
 
-// Fetch user details
+
 router.get('/user', (req, res) => {
     const authHeader = req.headers.authorization;
+
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({ message: 'Unauthorized' });
+        return res.status(401).json({ message: 'Unauthorized: No token provided' });
     }
 
     const token = authHeader.split(' ')[1];
+
     jwt.verify(token, JWT_SECRET, (err, decoded) => {
         if (err) {
-            return res.status(401).json({ message: 'Invalid token' });
+            return res.status(401).json({ message: 'Session expired. Please log in again.' });
         }
 
         const userId = decoded.user_id;
 
-        const sql = 'SELECT id, name, email FROM users WHERE id = ?';
+        const sql = 'SELECT id, name, email, date_joined FROM users WHERE id = ?';
         db.query(sql, [userId], (err, results) => {
             if (err) {
                 return res.status(500).json({ message: 'Server error' });
@@ -93,5 +97,6 @@ router.get('/user', (req, res) => {
         });
     });
 });
+
 
 module.exports = router;
