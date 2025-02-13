@@ -42,13 +42,39 @@ router.get('/recent-users', async (req, res) => {
     }
 });
 
-router.get('/all-users',async (req,res)=>{
-    try{
+router.get('/all-users', async (req, res) => {
+    try {
+        const sql = 'SELECT id, name, email, date_joined FROM users'; // Adjust fields as needed
+        db.query(sql, (err, results) => {
+            if (err) {
+                console.error('Error fetching users:', err);
+                return res.status(500).json({ message: 'Server error' });
+            }
+            res.json(results);
+        });
+    } catch (error) {
+        console.error('Unexpected error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
 
+router.get('/search-users', async (req, res) => {
+    try {
+        const search = req.query.search || '';
+
+        const users = await db.query(`
+            SELECT * FROM users
+            WHERE name LIKE ? OR email LIKE ?
+            ORDER BY date_joined DESC
+        `, [`%${search}%`, `%${search}%`]);
+
+        res.json(users);
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        res.status(500).json({ message: 'Error fetching users' });
     }
-    catch{
-        
-    }
-})
+});
+
+
 
 module.exports = router;
