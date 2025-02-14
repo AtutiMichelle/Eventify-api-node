@@ -83,4 +83,45 @@ router.get('/search-users', async (req, res) => {
     }
 });
 
+router.delete('/users/:id', async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const sql = 'DELETE FROM users WHERE id = ?';
+        const result = await db.query(sql, [userId]); 
+
+        if (result[0].affectedRows === 0) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        res.json({ message: 'User deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+
+router.put('/users/:id', async (req, res) => {
+    console.log('Received PUT request:', req.params, req.body);
+    const userId = req.params.id;
+    const updatedData = req.body;
+
+    try {
+        const result = await db.query(
+            'UPDATE users SET name = ?, email = ? WHERE id = ?',
+            [updatedData.name, updatedData.email, userId]
+        ); 
+
+        console.log('Update Result:', result);
+
+        if (result.affectedRows > 0) {
+            res.json({ message: 'User updated successfully' });
+        } else {
+            res.status(404).json({ message: 'User not found' });
+        }
+    } catch (error) {
+        console.error('Update Error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 module.exports = router;
