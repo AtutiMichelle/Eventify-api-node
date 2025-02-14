@@ -60,21 +60,27 @@ router.get('/all-users', async (req, res) => {
 
 router.get('/search-users', async (req, res) => {
     try {
-        const search = req.query.search || '';
+        const { search } = req.query;
+        console.log('🔍 Received search query:', search);
 
-        const users = await db.query(`
-            SELECT * FROM users
-            WHERE name LIKE ? OR email LIKE ?
-            ORDER BY date_joined DESC
-        `, [`%${search}%`, `%${search}%`]);
+        if (!search) {
+            return res.status(400).json({ message: 'Search query is required' });
+        }
 
-        res.json(users);
+        // Construct SQL query
+        const sql = `SELECT * FROM users WHERE name LIKE ? OR email LIKE ? OR date_joined LIKE ?`;
+        const searchPattern = `%${search}%`;
+        console.log('🛠 Query:', sql, [searchPattern, searchPattern, searchPattern]);
+
+        // Execute query
+        const [results] = await db.query(sql, [searchPattern, searchPattern, searchPattern]);
+
+        console.log('✅ Search results:', results);
+        res.json(results);
     } catch (error) {
-        console.error('Error fetching users:', error);
-        res.status(500).json({ message: 'Error fetching users' });
+        console.error('❌ Error searching users:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
 });
-
-
 
 module.exports = router;
