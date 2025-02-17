@@ -44,7 +44,7 @@ router.get('/recent-users', async (req, res) => {
 
 router.get('/all-users', async (req, res) => {
     try {
-        const sql = 'SELECT id, name, email, date_joined FROM users'; // Adjust fields as needed
+        const sql = 'SELECT id, name, email, date_joined FROM users'; 
         db.query(sql, (err, results) => {
             if (err) {
                 console.error('Error fetching users:', err);
@@ -76,7 +76,8 @@ router.get('/search-users', async (req, res) => {
         const [results] = await db.query(sql, [searchPattern, searchPattern, searchPattern]);
 
         console.log('✅ Search results:', results);
-        res.json(results);
+        res.json(Array.isArray(results) ? results : [results]);
+
     } catch (error) {
         console.error('❌ Error searching users:', error);
         res.status(500).json({ message: 'Server error', error: error.message });
@@ -87,9 +88,10 @@ router.delete('/users/:id', async (req, res) => {
     try {
         const userId = req.params.id;
         const sql = 'DELETE FROM users WHERE id = ?';
+
         const result = await db.query(sql, [userId]); 
 
-        if (result[0].affectedRows === 0) {
+        if (result.affectedRows === 0) {  
             return res.status(404).json({ message: 'User not found' });
         }
 
@@ -99,6 +101,7 @@ router.delete('/users/:id', async (req, res) => {
         res.status(500).json({ message: 'Internal Server Error' });
     }
 });
+
 
 router.put('/users/:id', async (req, res) => {
     console.log('Received PUT request:', req.params, req.body);

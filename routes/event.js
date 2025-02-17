@@ -86,4 +86,6 @@ router.get('/user-registrations', authenticateUser, async (req, res) => {
     }
 });
 
+//Retrieve all events
+
 module.exports = router;
